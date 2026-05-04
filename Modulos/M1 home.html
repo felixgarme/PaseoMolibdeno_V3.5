@@ -38,7 +38,7 @@
         #contenedor-iframes {
             position: relative;
             width: 100vw;
-            height: 100vh;
+            height: calc(100vh - 90px);
             transition: height 0.3s;
         }
 
@@ -64,7 +64,7 @@
 
         #indicador {
             position: fixed;
-            top:18px;
+            top: 18px;
             left: 70px;
             background-color: rgba(255, 255, 255, 0.95);
             color: #122285;
@@ -94,12 +94,63 @@
             width: 100%;
             height: 90px;
             z-index: 999;
-            pointer-events: none;
+            background-color: #ffffff;
+            box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1);
+            pointer-events: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            box-sizing: border-box;
+        }
+
+        #avatar-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            height: 100%;
+            max-width: 60%;
+        }
+
+        #avatar-video {
+            height: 70px;
+            width: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #000;
+            flex-shrink: 0; /* Evita que el video se encoja si el texto es muy largo */
+        }
+
+        #avatar-texto {
+            font-family: 'AASmartSans', Arial, sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: #122285;
+            /* Modificaciones clave: */
+            white-space: normal; /* Permite saltos de línea */
+            word-wrap: break-word; /* Rompe palabras largas */
+            overflow-y: auto; /* Agrega scroll si el texto sobrepasa el alto */
+            max-height: 70px; /* Limita el alto al tamaño del avatar */
+            padding-right: 5px;
+            opacity: 1;
+            line-height: 1.2;
+        }
+
+        /* Estilos para el scrollbar del texto del avatar para que luzca estético */
+        #avatar-texto::-webkit-scrollbar {
+            width: 4px;
+        }
+        #avatar-texto::-webkit-scrollbar-thumb {
+            background-color: #d0d7ed;
+            border-radius: 4px;
+        }
+
+        #botones-container {
+            display: flex;
+            gap: 15px;
         }
 
         .btn {
-            position: absolute;
-            bottom: 20px;
             background-color: #f8faff;
             border: 2px solid #d0d7ed;
             color: #122285;
@@ -114,7 +165,14 @@
             align-items: center;
             gap: 12px;
             transition: transform 0.1s, opacity 0.3s;
-            pointer-events: auto;
+        }
+
+        #btn-atras {
+            width: 52px;
+            height: 52px;
+            padding: 0;
+            border-radius: 50%;
+            justify-content: center;
         }
 
         .btn:active {
@@ -127,18 +185,10 @@
             transform: none;
         }
 
-        .btn .icono-continuar {
+        .btn .icono-continuar, .btn .icono-atras {
             color: #e50000;
             font-size: 22px;
             font-weight: 900;
-        }
-
-        #btn-atras {
-            left: 30px;
-        }
-
-        #btn-continuar {
-            right: 30px;
         }
 
         @media (max-width: 768px) and (orientation: portrait) {
@@ -162,23 +212,32 @@
             }
 
             #barra-controles {
-                background-color: #ffffff;
-                pointer-events: auto;
-                box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1);
+                padding: 0 15px;
             }
-            #contenedor-iframes {
-                height: calc(100vh - 90px);
+            
+            #avatar-video {
+                height: 50px;
+                width: 50px;
             }
+
+            #avatar-texto {
+                font-size: 14px;
+                max-height: 50px; /* Ajustado para móvil */
+            }
+
+            #botones-container {
+                gap: 10px;
+            }
+            
             .btn {
-                bottom: 18px;
                 padding: 10px 25px;
                 font-size: 16px;
             }
+
             #btn-atras {
-                left: 15px;
-            }
-            #btn-continuar {
-                right: 15px;
+                width: 44px;
+                height: 44px;
+                padding: 0;
             }
         }
     </style>
@@ -190,10 +249,18 @@
     <div id="contenedor-iframes"></div>
 
     <div id="barra-controles">
-        <button id="btn-atras" class="btn" disabled>Atrás</button>
-        <button id="btn-continuar" class="btn" disabled>
-            Continuar <span class="icono-continuar">&#10095;</span>
-        </button>
+        <div id="avatar-container">
+            <video id="avatar-video" src="../Recursos/video/avatarA.mp4" loop autoplay muted playsinline></video>
+            <div id="avatar-texto"></div>
+        </div>
+        <div id="botones-container">
+            <button id="btn-atras" class="btn">
+                <span class="icono-atras">&#10094;</span>
+            </button>
+            <button id="btn-continuar" class="btn" disabled>
+                Continuar <span class="icono-continuar">&#10095;</span>
+            </button>
+        </div>
     </div>
 
 <script>
@@ -201,11 +268,80 @@
     let indiceActual = 0;
     let actualIframe = null;
     let preloadIframe = null;
+    let audioAvatarActual = null;
+    let intervaloTexto = null;
+    let timeoutTexto = null;
 
     const contenedorIframes = document.getElementById('contenedor-iframes');
     const btnAtras = document.getElementById('btn-atras');
     const btnContinuar = document.getElementById('btn-continuar');
     const indicador = document.getElementById('indicador');
+    const avatarTexto = document.getElementById('avatar-texto');
+
+    window.avatarhtml = function(texto, audioUrl) {
+        clearInterval(intervaloTexto);
+        clearTimeout(timeoutTexto);
+        
+        avatarTexto.style.transition = 'none';
+        avatarTexto.style.opacity = '1';
+        // Usar textContent soluciona el problema de los espacios perdidos
+        avatarTexto.textContent = ""; 
+        
+        // Resetear scroll si había quedado abajo
+        avatarTexto.scrollTop = 0;
+        
+        setTimeout(() => {
+            avatarTexto.style.transition = 'opacity 1.5s ease-in-out';
+        }, 50);
+
+        if (audioAvatarActual) {
+            audioAvatarActual.pause();
+            audioAvatarActual.currentTime = 0;
+        }
+        
+        if (audioUrl) {
+            audioAvatarActual = new Audio(audioUrl);
+            
+            audioAvatarActual.addEventListener('loadedmetadata', () => {
+                const duracionMs = audioAvatarActual.duration * 1000;
+                const tiempoPorLetra = (duracionMs * 0.8) / texto.length;
+                
+                let i = 0;
+                intervaloTexto = setInterval(() => {
+                    // Usar textContent en lugar de innerText
+                    avatarTexto.textContent += texto.charAt(i);
+                    // Hacer auto-scroll hacia abajo si el texto crece
+                    avatarTexto.scrollTop = avatarTexto.scrollHeight;
+                    i++;
+                    if (i >= texto.length) {
+                        clearInterval(intervaloTexto);
+                    }
+                }, tiempoPorLetra);
+
+                timeoutTexto = setTimeout(() => {
+                    avatarTexto.style.opacity = '0';
+                }, duracionMs);
+            });
+
+            audioAvatarActual.play().catch(e => console.error(e));
+        } else {
+            let i = 0;
+            intervaloTexto = setInterval(() => {
+                // Usar textContent en lugar de innerText
+                avatarTexto.textContent += texto.charAt(i);
+                // Hacer auto-scroll hacia abajo si el texto crece
+                avatarTexto.scrollTop = avatarTexto.scrollHeight;
+                i++;
+                if (i >= texto.length) {
+                    clearInterval(intervaloTexto);
+                }
+            }, 40);
+
+            timeoutTexto = setTimeout(() => {
+                avatarTexto.style.opacity = '0';
+            }, (texto.length * 40) + 2500);
+        }
+    };
 
     window.continuarbtn = function(estado) {
         if ((estado === true || estado === "true") && indiceActual < listaUrls.length - 1) {
@@ -265,10 +401,17 @@
             preloadIframe = crearIframe(listaUrls[indiceActual + 1], 'iframe-preload');
         }
 
-        btnAtras.disabled = indiceActual === 0;
         btnContinuar.disabled = true;
 
         localStorage.setItem('visor_ultimo_indice', indiceActual);
+        
+        avatarTexto.style.transition = 'none';
+        avatarTexto.style.opacity = '0';
+        clearInterval(intervaloTexto);
+        clearTimeout(timeoutTexto);
+        if (audioAvatarActual) {
+            audioAvatarActual.pause();
+        }
     }
 
     btnAtras.addEventListener('click', () => {
