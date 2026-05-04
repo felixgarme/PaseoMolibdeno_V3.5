@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visor de iFrames</title>
     <style>
+        @font-face {
+            font-family: 'AASmartSans';
+            src: url('../Recursos/fonts/AASMARTSANS-REGULAR.TTF') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'AASmartSans';
+            src: url('../Recursos/fonts/AASMARTSANS-SEMIBOLD.TTF') format('truetype');
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'AASmartSans';
+            src: url('../Recursos/fonts/AASMARTSANS-BOLD.TTF') format('truetype');
+            font-weight: 700;
+            font-style: normal;
+        }
+
         body, html {
             margin: 0;
             padding: 0;
@@ -37,8 +58,7 @@
 
         .iframe-preload {
             z-index: 1;
-            /* Usamos 0.01 en lugar de 0 para obligar al navegador a renderizar el iframe en 2do plano */
-            opacity: 0.01; 
+            opacity: 0;
             pointer-events: none;
         }
 
@@ -86,7 +106,7 @@
             padding: 12px 35px;
             font-size: 18px;
             font-weight: 800;
-            font-family: Arial, sans-serif;
+            font-family: 'AASmartSans', Arial, sans-serif;
             border-radius: 50px;
             cursor: pointer;
             box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
@@ -216,7 +236,6 @@
     function crearIframe(url, clase) {
         const iframe = document.createElement('iframe');
         iframe.src = url;
-        iframe.dataset.url = url; // GUARDAMOS LA URL EXACTA para la validación
         iframe.className = clase;
         iframe.allowFullscreen = true;
         contenedorIframes.appendChild(iframe);
@@ -230,24 +249,18 @@
         void indicador.offsetWidth;
         indicador.classList.add('animacion-cambio');
 
-        const urlObjetivo = listaUrls[indiceActual];
-
-        // VALIDACIÓN MEJORADA: Comparamos el dataset.url en lugar del src
-        if (preloadIframe && preloadIframe.dataset.url === urlObjetivo) {
-            // El iframe ya está cargado detrás, solo lo volvemos visible
+        if (preloadIframe && preloadIframe.src.endsWith(listaUrls[indiceActual])) {
             if (actualIframe) actualIframe.remove();
             actualIframe = preloadIframe;
             actualIframe.className = 'iframe-visible';
             preloadIframe = null;
         } else {
-            // Si por algún motivo no coincide (ej. el usuario volvió hacia atrás)
             if (actualIframe) actualIframe.remove();
             if (preloadIframe) preloadIframe.remove();
-            actualIframe = crearIframe(urlObjetivo, 'iframe-visible');
+            actualIframe = crearIframe(listaUrls[indiceActual], 'iframe-visible');
             preloadIframe = null;
         }
 
-        // PRECARGAR EL SIGUIENTE ELEMENTO (Detrás del actual)
         if (indiceActual < listaUrls.length - 1) {
             preloadIframe = crearIframe(listaUrls[indiceActual + 1], 'iframe-preload');
         }

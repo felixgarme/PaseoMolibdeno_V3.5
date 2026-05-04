@@ -377,12 +377,12 @@
       border-bottom: 1px solid rgba(3, 23, 149, 0.05);
     }
 
-    .check-card-img iframe {
+    .check-card-img video {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
-      border: 0;
+      object-fit: cover;
       display: block;
     }
 
@@ -733,7 +733,7 @@
           </p>
         </div>
 
-        <!-- Chequeos (ambas cartas visibles; modelo 3D EPP en cada una) -->
+        <!-- Chequeos (ambas cartas visibles; video demostrativo en cada una) -->
         <div class="s3-cards" role="region" aria-label="Chequeos de presión positiva y negativa">
 
           <div class="check-card card-pos" id="s3-card-pos" style="--delay: 0.2s">
@@ -743,12 +743,16 @@
             </div>
             <div class="check-card-body">
               <figure class="check-card-img">
-                <iframe
-                  src="../../Complementos/Epp/Epp.html"
-                  title="Modelo 3D EPP — referencia visual para chequeo con presión positiva"
-                  loading="lazy"
-                  allowfullscreen
-                ></iframe>
+                <video
+                  autoplay
+                  loop
+                  muted
+                  playsinline
+                  preload="metadata"
+                  aria-label="Demostración del chequeo con presión positiva"
+                >
+                  <source src="../../Recursos/video/verificacion1.mp4" type="video/mp4" />
+                </video>
               </figure>
               <p class="check-card-text">
                 Cubra con la mano la abertura de la tapa de la válvula de exhalación.
@@ -765,12 +769,16 @@
             </div>
             <div class="check-card-body">
               <figure class="check-card-img">
-                <iframe
-                  src="../../Epp/Epp.html"
-                  title="Modelo 3D EPP — referencia visual para chequeo con presión negativa"
-                  loading="lazy"
-                  allowfullscreen
-                ></iframe>
+                <video
+                  autoplay
+                  loop
+                  muted
+                  playsinline
+                  preload="metadata"
+                  aria-label="Demostración del chequeo con presión negativa"
+                >
+                  <source src="../../Recursos/video/verificacion2.mp4" type="video/mp4" />
+                </video>
               </figure>
               <p class="check-card-text">
                 <strong>Con cartuchos:</strong> Cubra el cartucho con las palmas de las manos
@@ -792,6 +800,8 @@
   const btnScrollVerify = document.getElementById('btnScrollVerify');
   const verifyStart = document.getElementById('verifyStart');
   const instructionsSection = document.querySelector('.s2-grid');
+  /** Scroll real del contenido (IO con root null usa el viewport y falla con overflow en main). */
+  const scrollRoot = document.getElementById('main');
 
   const reviewState = {
     instructions: false,
@@ -827,6 +837,11 @@
     });
   }
 
+  const ioOpts =
+    scrollRoot
+      ? { root: scrollRoot, rootMargin: '0px', threshold: 0 }
+      : { threshold: 0 };
+
   if ('IntersectionObserver' in window) {
     if (instructionsSection) {
       const instructionsObserver = new IntersectionObserver((entries, observer) => {
@@ -835,7 +850,7 @@
           markInstructionsReviewed();
           observer.disconnect();
         });
-      }, { threshold: 0.25 });
+      }, ioOpts);
       instructionsObserver.observe(instructionsSection);
     }
 
@@ -846,24 +861,27 @@
           markVerificationReviewed();
           observer.disconnect();
         });
-      }, { threshold: 0.35 });
+      }, ioOpts);
       verificationObserver.observe(verifyStart);
     }
   } else {
     if (instructionsSection) markInstructionsReviewed();
-    window.addEventListener('scroll', () => {
-      if (!verifyStart || reviewState.verification) return;
-      const rect = verifyStart.getBoundingClientRect();
-      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-      if (rect.top < viewportHeight * 0.75 && rect.bottom > 0) {
-        markVerificationReviewed();
-      }
-    }, { passive: true });
+    const scrollEl = scrollRoot || window;
+    scrollEl.addEventListener(
+      'scroll',
+      () => {
+        if (!verifyStart || reviewState.verification) return;
+        const rRoot = scrollRoot
+          ? scrollRoot.getBoundingClientRect()
+          : { top: 0, bottom: window.innerHeight || document.documentElement.clientHeight };
+        const rect = verifyStart.getBoundingClientRect();
+        const visible = rect.top < rRoot.bottom * 0.92 && rect.bottom > rRoot.top;
+        if (visible) markVerificationReviewed();
+      },
+      { passive: true }
+    );
   }
 })();
-</script>
-<script>
-  window.parent.continuarbtn("true");
 </script>
 
 </body>

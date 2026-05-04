@@ -630,15 +630,24 @@
       flex-shrink: 0;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       gap: clamp(8px,1.5vw,20px);
       padding: clamp(7px,1vh,12px) clamp(14px,2.5vw,28px) 0;
+    }
+
+    .ctrl-nav-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(10px,2vw,20px);
+      max-width: 100%;
     }
 
     .ctrl-btn {
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      gap: 0;
       padding: 9px clamp(14px,2vw,22px);
       border-radius: 99px;
       border: 1.5px solid var(--border);
@@ -649,6 +658,16 @@
       color: var(--blue);
       box-shadow: 0 4px 14px rgba(3,23,149,0.08);
       transition: all 0.24s ease;
+    }
+
+    .ctrl-btn--icon-only {
+      width: clamp(40px,5vw,48px);
+      height: clamp(40px,5vw,48px);
+      padding: 0;
+      border-radius: 50%;
+      font-size: clamp(20px,2.8vw,28px);
+      font-weight: 700;
+      line-height: 1;
     }
 
     .ctrl-btn:hover:not(:disabled) {
@@ -665,8 +684,9 @@
       flex-direction: column;
       align-items: center;
       gap: 4px;
-      flex: 1;
+      flex: 0 1 auto;
       min-width: 0;
+      text-align: center;
     }
 
     .ctrl-step-label {
@@ -999,16 +1019,18 @@
 
     <footer class="app-footer">
       <div class="controls-row">
-        <button class="ctrl-btn" id="btnCtrlPrev" type="button" disabled aria-label="Paso anterior">
-          ← Anterior
-        </button>
-        <div class="ctrl-center">
-          <span class="ctrl-step-label" id="ctrlStepLabel" aria-live="polite">Paso 1 de 6</span>
-          <span class="ctrl-step-name" id="ctrlStepName">Vista general del formato</span>
+        <div class="ctrl-nav-group">
+          <button class="ctrl-btn ctrl-btn--icon-only" id="btnCtrlPrev" type="button" disabled aria-label="Paso anterior">
+            <span aria-hidden="true">‹</span>
+          </button>
+          <div class="ctrl-center">
+            <span class="ctrl-step-label" id="ctrlStepLabel" aria-live="polite">Paso 1 de 6</span>
+            <span class="ctrl-step-name" id="ctrlStepName">Vista general del formato</span>
+          </div>
+          <button class="ctrl-btn ctrl-btn--icon-only" id="btnCtrlNext" type="button" aria-label="Siguiente paso">
+            <span aria-hidden="true">›</span>
+          </button>
         </div>
-        <button class="ctrl-btn" id="btnCtrlNext" type="button" aria-label="Siguiente paso">
-          Siguiente →
-        </button>
       </div>
     </footer>
 
