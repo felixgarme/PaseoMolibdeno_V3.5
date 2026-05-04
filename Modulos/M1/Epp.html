@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel de Seguridad EPP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" type="text/css" href="../../Recursos/css/epp.css">
+</head>
+<body>
+
+<div class="layout">
+
+  <div class="viewer-panel">
+    <div class="viewer-label">
+      <img src="../../Recursos/img/logo.png" alt="Logo" />
+    </div>
+    <iframe id="viewer-iframe" class="viewer-iframe" src="../../Complementos/Epp/Epp.html" allowfullscreen></iframe>
+  </div>
+
+  <div class="right-panel">
+
+    <div class="section-header">
+      <div class="section-title">Equipo de Protección Personal</div>
+      <div class="title-line"></div>
+    </div>
+
+    <div class="epp-wrapper">
+
+      <div class="epp-card">
+        <div class="epp-head">
+          <div class="epp-title">
+            EPP Básico
+            <small>Requerido en toda el área de trabajo</small>
+          </div>
+        </div>
+        <div class="epp-body">
+          <div class="epp-items">
+            <div class="epp-item" onclick="document.getElementById('viewer-iframe').contentWindow.v3d.puzzles.procedures['casco'](); registrarClic('casco', this);">
+              <div class="epp-item-label">Casco c/ visera y barbiquejo</div>
+            </div>
+            <div class="epp-item" onclick="document.getElementById('viewer-iframe').contentWindow.v3d.puzzles.procedures['lentes'](); registrarClic('lentes', this);">
+              <div class="epp-item-label">Lentes de seguridad</div>
+            </div>
+            <div class="epp-item" onclick="document.getElementById('viewer-iframe').contentWindow.v3d.puzzles.procedures['zapatos'](); registrarClic('zapatos', this);">
+              <div class="epp-item-label">Zapatos de seguridad</div>
+            </div>
+            <div class="epp-item" onclick="document.getElementById('viewer-iframe').contentWindow.v3d.puzzles.procedures['bloqueador'](); registrarClic('bloqueador', this);">
+              <div class="epp-item-label">Bloqueador solar</div>
+            </div>
+            <div class="epp-item" onclick="document.getElementById('viewer-iframe').contentWindow.v3d.puzzles.procedures['ropa'](); registrarClic('ropa', this);">
+              <div class="epp-item-label">Chaleco / ropa c/ cinta reflectiva</div>
+            </div>
+            <div class="epp-item" onclick="document.getElementById('viewer-iframe').contentWindow.v3d.puzzles.procedures['auditiva'](); registrarClic('auditiva', this);">
+              <div class="epp-item-label">Protección auditiva</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="epp-card">
+        <div id="epp-placeholder" style="cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column; min-height: 150px; background: var(--primary); padding: 20px; transition: background 0.3s ease;" 
+             onclick="
+                document.getElementById('epp-placeholder').style.display = 'none'; 
+                document.getElementById('epp-content-wrapper').style.display = 'flex'; 
+                document.getElementById('viewer-iframe').contentWindow.v3d.puzzles.procedures['respirador']();
+                registrarClic('especifico', this);
+             "
+             onmouseover="this.style.background='#021070'" 
+             onmouseout="this.style.background='var(--primary)'">
+          <div class="epp-title" style="font-size: 20px; text-align: center;">
+            EPP ESPECÍFICO
+            <small style="margin-top: 6px; font-size: 13px;">Presiona aquí para ver el contenido</small>
+          </div>
+        </div>
+
+        <div id="epp-content-wrapper" style="display: none; flex-direction: column; flex: 1;">
+          <div class="epp-head">
+            <div class="epp-title">
+              EPP Específico
+              <small>Según peligros y riesgos identificados</small>
+            </div>
+          </div>
+          
+          <div class="epp-body-specific" id="epp-specific-content">
+            <div class="spec-info">
+              <div class="spec-info-title">Uso adicional al EPP básico</div>
+              <div class="spec-info-desc">
+                Se usa adicionalmente al EPP básico y está acorde a los peligros y riesgos identificados para la tarea y área de trabajo.
+              </div>
+              <div class="spec-note">
+                El supervisor de seguridad determina el equipo específico requerido según la evaluación de riesgos del área.
+              </div>
+            </div>
+
+            <div class="spec-iframe-wrap">
+              <iframe src="../../Complementos/Mascara/Mascara.html" allowfullscreen></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const PUNTOS_REQUERIDOS = 7; 
+  let puntosPresionados = new Set();
+
+  function registrarClic(id, elemento) {
+    puntosPresionados.add(id);
+    
+    if(elemento && elemento.classList.contains('epp-item')) {
+      elemento.classList.add('clicked');
+    }
+
+    if (puntosPresionados.size === PUNTOS_REQUERIDOS) {
+   
+      window.parent.continuarbtn("true"); 
+    }
+  }
+</script>
+
+</body>
+</html>

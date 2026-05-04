@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor de iFrames</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        #contenedor-iframes {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            transition: height 0.3s;
+        }
+
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .iframe-visible {
+            z-index: 2;
+            opacity: 1;
+        }
+
+        .iframe-preload {
+            z-index: 1;
+            /* Usamos 0.01 en lugar de 0 para obligar al navegador a renderizar el iframe en 2do plano */
+            opacity: 0.01; 
+            pointer-events: none;
+        }
+
+        #indicador {
+            position: fixed;
+            top:18px;
+            left: 70px;
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #122285;
+            padding: 8px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .animacion-cambio {
+            animation: resalto 0.4s ease;
+        }
+
+        @keyframes resalto {
+            0% { transform: scale(1); background-color: rgba(255, 255, 255, 0.95); }
+            50% { transform: scale(1.15); background-color: #d0d7ed; }
+            100% { transform: scale(1); background-color: rgba(255, 255, 255, 0.95); }
+        }
+
+        #barra-controles {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 90px;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .btn {
+            position: absolute;
+            bottom: 20px;
+            background-color: #f8faff;
+            border: 2px solid #d0d7ed;
+            color: #122285;
+            padding: 12px 35px;
+            font-size: 18px;
+            font-weight: 800;
+            font-family: Arial, sans-serif;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: transform 0.1s, opacity 0.3s;
+            pointer-events: auto;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn .icono-continuar {
+            color: #e50000;
+            font-size: 22px;
+            font-weight: 900;
+        }
+
+        #btn-atras {
+            left: 30px;
+        }
+
+        #btn-continuar {
+            right: 30px;
+        }
+
+        @media (max-width: 768px) and (orientation: portrait) {
+            #indicador {
+                top: 0;
+                bottom: auto;
+                right: auto;
+                left: 50%;
+                transform: translateX(-50%);
+                border-radius: 0 0 15px 15px;
+            }
+
+            .animacion-cambio {
+                animation: resalto-mobile 0.4s ease;
+            }
+
+            @keyframes resalto-mobile {
+                0% { transform: translateX(-50%) scale(1); background-color: rgba(255, 255, 255, 0.95); }
+                50% { transform: translateX(-50%) scale(1.15); background-color: #d0d7ed; }
+                100% { transform: translateX(-50%) scale(1); background-color: rgba(255, 255, 255, 0.95); }
+            }
+
+            #barra-controles {
+                background-color: #ffffff;
+                pointer-events: auto;
+                box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1);
+            }
+            #contenedor-iframes {
+                height: calc(100vh - 90px);
+            }
+            .btn {
+                bottom: 18px;
+                padding: 10px 25px;
+                font-size: 16px;
+            }
+            #btn-atras {
+                left: 15px;
+            }
+            #btn-continuar {
+                right: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="indicador">0/0</div>
+
+    <div id="contenedor-iframes"></div>
+
+    <div id="barra-controles">
+        <button id="btn-atras" class="btn" disabled>Atrás</button>
+        <button id="btn-continuar" class="btn" disabled>
+            Continuar <span class="icono-continuar">&#10095;</span>
+        </button>
+    </div>
+
+<script>
+    let listaUrls = [];
+    let indiceActual = 0;
+    let actualIframe = null;
+    let preloadIframe = null;
+
+    const contenedorIframes = document.getElementById('contenedor-iframes');
+    const btnAtras = document.getElementById('btn-atras');
+    const btnContinuar = document.getElementById('btn-continuar');
+    const indicador = document.getElementById('indicador');
+
+    window.continuarbtn = function(estado) {
+        if ((estado === true || estado === "true") && indiceActual < listaUrls.length - 1) {
+            btnContinuar.disabled = false;
+        } else {
+            btnContinuar.disabled = true;
+        }
+    };
+
+    const indiceGuardado = localStorage.getItem('visor_ultimo_indice');
+
+    fetch('../Recursos/list/M1.json')
+        .then(r => r.json())
+        .then(d => {
+            listaUrls = d.enlaces; 
+            if (listaUrls.length > 0) {
+                if (indiceGuardado !== null) {
+                    let sugerido = parseInt(indiceGuardado);
+                    if (sugerido < listaUrls.length) {
+                        indiceActual = sugerido;
+                    }
+                }
+                actualizarIframes();
+            }
+        })
+        .catch(e => console.error(e));
+
+    function crearIframe(url, clase) {
+        const iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.dataset.url = url; // GUARDAMOS LA URL EXACTA para la validación
+        iframe.className = clase;
+        iframe.allowFullscreen = true;
+        contenedorIframes.appendChild(iframe);
+        return iframe;
+    }
+
+    function actualizarIframes() {
+        indicador.innerText = `${indiceActual + 1}/${listaUrls.length}`;
+        
+        indicador.classList.remove('animacion-cambio');
+        void indicador.offsetWidth;
+        indicador.classList.add('animacion-cambio');
+
+        const urlObjetivo = listaUrls[indiceActual];
+
+        // VALIDACIÓN MEJORADA: Comparamos el dataset.url en lugar del src
+        if (preloadIframe && preloadIframe.dataset.url === urlObjetivo) {
+            // El iframe ya está cargado detrás, solo lo volvemos visible
+            if (actualIframe) actualIframe.remove();
+            actualIframe = preloadIframe;
+            actualIframe.className = 'iframe-visible';
+            preloadIframe = null;
+        } else {
+            // Si por algún motivo no coincide (ej. el usuario volvió hacia atrás)
+            if (actualIframe) actualIframe.remove();
+            if (preloadIframe) preloadIframe.remove();
+            actualIframe = crearIframe(urlObjetivo, 'iframe-visible');
+            preloadIframe = null;
+        }
+
+        // PRECARGAR EL SIGUIENTE ELEMENTO (Detrás del actual)
+        if (indiceActual < listaUrls.length - 1) {
+            preloadIframe = crearIframe(listaUrls[indiceActual + 1], 'iframe-preload');
+        }
+
+        btnAtras.disabled = indiceActual === 0;
+        btnContinuar.disabled = true;
+
+        localStorage.setItem('visor_ultimo_indice', indiceActual);
+    }
+
+    btnAtras.addEventListener('click', () => {
+        if (indiceActual > 0) {
+            indiceActual--;
+            actualizarIframes();
+        }
+    });
+
+    btnContinuar.addEventListener('click', () => {
+        if (indiceActual < listaUrls.length - 1) {
+            indiceActual++;
+            actualizarIframes();
+        }
+    });
+</script>
+</body>
+</html>

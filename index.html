@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Módulos</title>
+  <style>
+    @font-face { font-family:"AASmartSans"; src:url("../Recursos/fonts/AASMARTSANS-REGULAR.TTF") format("truetype"); font-weight:400 }
+    @font-face { font-family:"AASmartSans"; src:url("../Recursos/fonts/AASMARTSANS-SEMIBOLD.TTF") format("truetype"); font-weight:600 }
+    @font-face { font-family:"AASmartSans"; src:url("../Recursos/fonts/AASMARTSANS-BOLD.TTF") format("truetype"); font-weight:700 }
+
+    :root {
+      --primary:#031795; --primary-soft:#0d2ab8; --accent:#3d5afe;
+      --bg:#f4f6fc; --surface:#fff; --text:#0a1447;
+      --border:rgba(3,23,149,.12); --border-strong:rgba(3,23,149,.22);
+      --muted:#5c678a;
+      --shadow:0 4px 6px -1px rgba(10,20,71,.06),0 12px 24px -8px rgba(3,23,149,.12);
+      --shadow-sm:0 1px 2px rgba(10,20,71,.04);
+      --r-md:14px; --r-pill:999px;
+      --ease:cubic-bezier(.4,0,.2,1);
+      --sidebar-w:280px;
+    }
+
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
+
+    html, body {
+      height:100%; height:100dvh;
+      font-family:"AASmartSans","Segoe UI",system-ui,sans-serif;
+      background:var(--bg); color:var(--text);
+      overflow:hidden;
+      -webkit-font-smoothing:antialiased;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .layout {
+      display:flex;
+      height:100%;
+      height:100dvh;
+      position:relative;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width:var(--sidebar-w); 
+      flex-shrink:0;
+      display:flex; 
+      flex-direction:column;
+      background:linear-gradient(180deg,#fff 0%,#f8f9ff 100%);
+      border-right:1px solid var(--border);
+      padding:calc(28px + env(safe-area-inset-top,0px)) 20px calc(32px + env(safe-area-inset-bottom,0px)) calc(20px + env(safe-area-inset-left,0px));
+      transition:width .3s var(--ease), padding .3s var(--ease), opacity .25s var(--ease);
+      overflow:hidden; 
+      position:relative;
+      z-index:30; /* ahora queda delante del iframe */
+      box-shadow:4px 0 24px rgba(3,23,149,.08);
+    }
+    .sidebar::after {
+      content:""; position:absolute; inset:0 0 0 auto; width:1px;
+      background:linear-gradient(180deg,transparent,rgba(61,90,254,.15),transparent);
+      pointer-events:none;
+    }
+    .layout.collapsed .sidebar {
+      width:0; padding-left:0; padding-right:0; opacity:0; pointer-events:none
+    }
+
+    .brand {
+      margin-bottom:40px; padding:16px 12px;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--surface); border-radius:var(--r-md);
+      border:1px solid var(--border); box-shadow:var(--shadow-sm); white-space:nowrap;
+    }
+    .brand img { width:100%; max-width:200px; height:auto; object-fit:contain }
+
+    .nav { display:flex; flex-direction:column; gap:8px }
+    .nav-btn {
+      width:100%; border:1px solid transparent; background:transparent;
+      border-radius:var(--r-md); display:flex; align-items:center; gap:14px;
+      color:var(--muted); padding:14px 16px;
+      text-transform:uppercase; letter-spacing:.12em; font-size:11px; font-weight:700;
+      cursor:pointer; white-space:nowrap;
+      transition:color .2s var(--ease), background .2s var(--ease), border-color .2s var(--ease), box-shadow .2s var(--ease);
+    }
+    .nav-btn:hover  { background:rgba(3,23,149,.06); color:var(--primary) }
+    .nav-btn.active { background:var(--surface); color:var(--primary); border-color:var(--border); box-shadow:var(--shadow-sm) }
+
+    .icon {
+      width:22px; height:22px; flex-shrink:0;
+      border-radius:6px; border:2px solid currentColor;
+      position:relative; display:inline-block; color:inherit;
+    }
+    .icon.module::before,.icon.module::after { content:""; position:absolute; background:currentColor; border-radius:1px }
+    .icon.module::before { width:12px; height:2px; left:4px; top:9px }
+    .icon.module::after  { width:2px; height:12px; left:9px; top:4px }
+    .icon.options { border-radius:50% }
+    .icon.options::before,.icon.options::after { content:""; position:absolute; left:3px; width:12px; height:2px; background:currentColor; border-radius:1px }
+    .icon.options::before { top:7px }
+    .icon.options::after  { top:11px }
+
+    /* ── Toggle ── */
+    .toggle-btn {
+      position:fixed;
+      top:calc(16px + env(safe-area-inset-top,0px));
+      left:calc(var(--sidebar-w) + 12px);
+      z-index:100;
+      width:40px; height:40px;
+      border:1px solid var(--border-strong); border-radius:var(--r-md);
+      background:var(--surface); box-shadow:var(--shadow);
+      cursor:pointer; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:5px;
+      transition:left .3s var(--ease), background .2s var(--ease);
+    }
+    .toggle-btn:hover { background:rgba(3,23,149,.06) }
+    .toggle-btn span { display:block; width:16px; height:2px; background:var(--primary); border-radius:2px }
+    .layout.collapsed .toggle-btn { left:calc(12px + env(safe-area-inset-left,0px)) }
+
+    /* ── Área de capas ── */
+    .content-area {
+      flex:1; 
+      min-width:0;
+      position:relative;
+      z-index:1; /* debajo de la barra */
+      background:var(--bg);
+      overflow:hidden;
+    }
+
+    .capa-html {
+      position:absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      border:none; margin:0; padding:0;
+      opacity:0;
+      z-index:1;
+      transition:opacity 0.5s ease-in-out;
+    }
+    .capa-activa {
+      opacity:1;
+      z-index:1;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width:900px) {
+      :root { --sidebar-w:260px }
+      .layout { position:relative }
+      .sidebar {
+        position:absolute; top:0; left:0; bottom:0; height:100%;
+        box-shadow:4px 0 24px rgba(3,23,149,.12);
+      }
+      .layout:not(.collapsed) .toggle-btn { left:calc(var(--sidebar-w) + 8px) }
+      .layout.collapsed .toggle-btn { left:calc(12px + env(safe-area-inset-left,0px)) }
+    }
+    @media (max-width:480px) {
+      :root { --sidebar-w:240px }
+      .nav-btn { font-size:10px; letter-spacing:.08em; gap:8px; padding:11px 10px }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      .sidebar,.toggle-btn,.nav-btn,.capa-html { transition:none }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout collapsed" id="layout">
+
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="../Recursos/img/logo.png" alt="Anglo American" />
+      </div>
+      <nav class="nav">
+        <button class="nav-btn active" data-json="./Recursos/list/html.json">
+          <span class="icon module" aria-hidden="true"></span> Módulos
+        </button>
+        <button class="nav-btn" data-json="./Recursos/list/options.json">
+          <span class="icon options" aria-hidden="true"></span> Opciones
+        </button>
+      </nav>
+    </aside>
+
+    <button class="toggle-btn" id="toggleBtn" aria-label="Mostrar/ocultar menú">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="content-area" id="contenedorIframes"></div>
+
+  </div>
+
+  <script>
+    /* ── Sidebar toggle ── */
+    const layout  = document.getElementById("layout");
+    const navBtns = document.querySelectorAll(".nav-btn");
+    document.getElementById("toggleBtn").addEventListener("click", () => {
+      layout.classList.toggle("collapsed");
+    });
+
+    /* ── Estado ── */
+    let listaHtml    = [];
+    let indiceActual = 0;
+    let iframeActual = null; // solo existe UN iframe a la vez
+
+    const contenedor = document.getElementById("contenedorIframes");
+
+    /* ── Crear y mostrar un único iframe ── */
+    function mostrarPagina(indice) {
+      if (indice < 0 || indice >= listaHtml.length) return;
+
+      // Eliminar el iframe anterior del DOM
+      if (iframeActual) {
+        iframeActual.remove();
+        iframeActual = null;
+      }
+
+      const iframe = document.createElement("iframe");
+      iframe.src       = listaHtml[indice];
+      iframe.className = "capa-html";
+
+      contenedor.appendChild(iframe);
+
+      // Activar con pequeño delay para que la transición sea visible
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          iframe.classList.add("capa-activa");
+        });
+      });
+
+      iframeActual  = iframe;
+      indiceActual  = indice;
+    }
+
+    /* ── Navegación expuesta al iframe hijo ── */
+    window.siguientehtml = function() {
+      if (indiceActual < listaHtml.length - 1) {
+        mostrarPagina(indiceActual + 1);
+      }
+    };
+
+    window.retrocederhtml = function() {
+      if (indiceActual > 0) {
+        mostrarPagina(indiceActual - 1);
+      }
+    };
+
+    /* ── Carga de lista ── */
+    async function cargarLista(jsonUrl) {
+      if (iframeActual) { iframeActual.remove(); iframeActual = null; }
+      listaHtml    = [];
+      indiceActual = 0;
+
+      try {
+        const r = await fetch(jsonUrl);
+        if (!r.ok) throw new Error("No se pudo cargar " + jsonUrl);
+        listaHtml = await r.json();
+        mostrarPagina(0);
+      } catch (e) {
+        console.error("Error al cargar JSON:", e);
+      }
+    }
+
+    /* ── Sidebar: cambiar sección ── */
+    navBtns.forEach(btn => {
+      btn.addEventListener("click", async () => {
+        navBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        await cargarLista(btn.dataset.json);
+        if (window.innerWidth <= 900) layout.classList.add("collapsed");
+      });
+    });
+
+    /* ── Inicio ── */
+    cargarLista("./Recursos/list/html.json");
+  </script>
+</body>
+</html>

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Detectores de Gases Portátiles</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --azul:       #031795;
+      --rojo:       #FF0000;
+      --blanco:     #FFFFFF;
+      --azul-claro: #1a2ecc;
+      --azul-oscuro:#020f6b;
+      --gris-hielo: #f0f4ff;
+      --verde-on:   #00cc55;
+      --sombra-azul:rgba(3,23,149,0.18);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Exo 2', sans-serif;
+      background: var(--gris-hielo);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 100vh;
+    }
+
+    .info-panel {
+      padding: 2.4rem 2.8rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.5rem;
+      background: var(--blanco);
+      border-right: 3px solid var(--azul);
+      position: relative;
+      overflow: hidden auto;
+      animation: slideInLeft 0.7s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes slideInLeft {
+      from { opacity:0; transform:translateX(-40px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+    .info-panel::before {
+      content:'';
+      position:absolute; top:-80px; right:-80px;
+      width:300px; height:300px; border-radius:50%;
+      background:radial-gradient(circle,rgba(3,23,149,0.07) 0%,transparent 70%);
+      pointer-events:none;
+    }
+
+    .section-tag {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.7rem; color:var(--rojo);
+      letter-spacing:0.18em; text-transform:uppercase;
+      display:flex; align-items:center; gap:0.5rem;
+    }
+    .section-tag::before {
+      content:''; display:inline-block;
+      width:18px; height:2px; background:var(--rojo);
+    }
+
+    .info-title {
+      font-family:'Rajdhani',sans-serif;
+      font-size:2rem; font-weight:700;
+      color:var(--azul); line-height:1.15; letter-spacing:0.02em;
+    }
+    .info-title em { font-style:normal; color:var(--rojo); }
+
+    .info-text {
+      font-size:0.97rem; color:#1a1a3a; line-height:1.75;
+      background:var(--gris-hielo);
+      border-left:4px solid var(--azul);
+      border-radius:0 8px 8px 0;
+      padding:1rem 1.3rem;
+    }
+
+    .controls-container {
+      background: rgba(3, 23, 149, 0.04);
+      border: 1px solid rgba(3, 23, 149, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 0.6rem;
+    }
+    .btn-3d {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      background: var(--blanco);
+      color: var(--azul-oscuro);
+      border: 2px solid var(--azul-claro);
+      border-radius: 6px;
+      padding: 0.8rem 0.4rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(.22,1,.36,1);
+      text-align: center;
+    }
+    .btn-3d svg {
+      width: 20px; height: 20px; fill: var(--azul);
+      transition: fill 0.3s ease;
+    }
+    
+    .btn-3d:not(:disabled):hover {
+      background: var(--azul);
+      color: var(--blanco);
+      border-color: var(--azul);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px var(--sombra-azul);
+    }
+    .btn-3d:not(:disabled):hover svg { fill: var(--blanco); }
+    .btn-3d:active { transform: translateY(0); }
+
+    .btn-3d:disabled {
+      background: #e2e5eb;
+      color: #9aa2b1;
+      border-color: #d1d6e0;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .btn-3d:disabled svg {
+      fill: #9aa2b1;
+    }
+
+    .btn-3d.active-power {
+      background: var(--verde-on);
+      color: var(--blanco);
+      border-color: var(--verde-on);
+    }
+    .btn-3d.active-power svg {
+      fill: var(--blanco);
+    }
+    .btn-3d.active-power:hover {
+      background: #00b34a;
+      border-color: #00b34a;
+      box-shadow: 0 6px 12px rgba(0, 204, 85, 0.25);
+    }
+
+    .btn-3d.btn-completado {
+      background: var(--azul);
+      color: var(--blanco);
+      border-color: var(--azul);
+    }
+    .btn-3d.btn-completado svg {
+      fill: var(--blanco);
+    }
+
+    .location-bar {
+      display:flex; align-items:center; gap:0.7rem;
+      background:var(--azul-oscuro); color:var(--blanco);
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.8rem; padding:9px 15px;
+      border-radius:6px; letter-spacing:0.08em;
+    }
+    .location-bar svg { fill:var(--rojo); width:15px;height:15px;flex-shrink:0; }
+
+    .video-section {
+      background:var(--azul-oscuro);
+      border-radius:10px; overflow:hidden;
+      animation:fadeUp 0.6s ease 0.4s both;
+    }
+    @keyframes fadeUp {
+      from{opacity:0;transform:translateY(16px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    .video-label {
+      display:flex; align-items:center; gap:0.6rem;
+      padding:0.5rem 1rem;
+      background:var(--azul);
+      border-bottom:2px solid var(--rojo);
+    }
+    .video-label svg { fill:var(--blanco); width:14px;height:14px; }
+    .video-label span {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.68rem; color:rgba(255,255,255,0.85);
+      letter-spacing:0.12em; text-transform:uppercase;
+    }
+    .rec-dot {
+      width:8px;height:8px;border-radius:50%;
+      background:var(--rojo);margin-left:auto;
+      animation:blink 1.2s step-end infinite;
+    }
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+    .video-wrap {
+      position:relative; width:100%; aspect-ratio:16/9; background:#000;
+    }
+    .video-wrap video {
+      width:100%;height:100%;object-fit:cover;display:block;
+    }
+    .video-placeholder {
+      position:absolute;inset:0;
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;gap:0.6rem;
+      background:linear-gradient(135deg,#020f6b 0%,#031795 100%);
+      color:rgba(255,255,255,0.55);
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.7rem;letter-spacing:0.1em;
+    }
+    .video-placeholder svg{fill:rgba(255,255,255,0.3);width:36px;height:36px;}
+
+    /* --- ESTILOS DEL PANEL IFRAME Y TRANSICIONES --- */
+    .iframe-panel {
+      display:flex; flex-direction:column;
+      animation:slideInRight 0.7s cubic-bezier(.22,1,.36,1) 0.15s both;
+      position:relative; overflow:hidden;
+      background: url('../../Recursos/img/M1/detectorx.png') center center / cover no-repeat;
+    }
+    @keyframes slideInRight {
+      from{opacity:0;transform:translateX(40px)}
+      to{opacity:1;transform:translateX(0)}
+    }
+    
+    /* Capa de la nueva imagen de fondo (detector.png) con opacidad 0 inicial */
+    .bg-transition {
+      position: absolute;
+      inset: 0;
+      background: url('../../Recursos/img/M1/detector.png') center center / cover no-repeat;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .bg-transition.visible {
+      opacity: 1;
+    }
+
+    /* Malla azul superpuesta (z-index ajustado para estar sobre el fondo) */
+    .iframe-panel::before {
+      content:''; position:absolute; inset:0;
+      background:rgba(2,15,107,0.15);
+      pointer-events:none; z-index:1;
+    }
+
+    .iframe-header {
+      background:var(--azul-oscuro);
+      padding:0.6rem 1.3rem;
+      display:flex; align-items:center; gap:0.8rem;
+      border-bottom:2px solid var(--rojo);
+      flex-shrink:0; position:relative; z-index:2;
+    }
+    .iframe-title {
+      font-family:'Rajdhani',sans-serif;
+      font-size:0.95rem; font-weight:600;
+      color:var(--blanco); letter-spacing:0.1em;
+      text-transform:uppercase;
+    }
+    .traffic-lights{display:flex;gap:6px;}
+    .tl{width:11px;height:11px;border-radius:50%;}
+    .tl-r{background:var(--rojo);}
+    .tl-y{background:#ffcc00;}
+    .tl-g{background:#00cc55;animation:blink 2s step-end infinite;}
+
+    .iframe-wrap {
+      flex:1; position:relative; z-index:2;
+    }
+    /* Estilos del iframe y clase de desvanecimiento */
+    .iframe-wrap iframe {
+      width:100%;height:100%;border:none;display:block;
+      background:transparent;
+      transition: opacity 1.5s ease-in-out;
+    }
+    .iframe-wrap iframe.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .scan-overlay {
+      position:absolute;inset:0;
+      background:repeating-linear-gradient(
+        to bottom,
+        transparent 0px,transparent 3px,
+        rgba(3,23,149,0.03) 3px,rgba(3,23,149,0.03) 4px
+      );
+      pointer-events:none;z-index:3;
+    }
+
+    @media (max-width:768px){
+      main {
+        grid-template-columns:1fr;
+        grid-template-rows:auto auto;
+        height:auto;
+        grid-template-areas:
+          "iframe"
+          "info";
+      }
+      .info-panel  { grid-area:info;   padding:1.8rem 1.3rem; overflow:visible; }
+      .iframe-panel{ grid-area:iframe; min-height:60vh; }
+      .info-title  { font-size:1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<main>
+
+  <section class="info-panel">
+
+    <div class="section-tag">Protocolo de Entrega</div>
+
+    <h2 class="info-title">
+      Verificación y<br>
+      <em>Entrega Certificada</em>
+    </h2>
+
+    <p class="info-text">
+      Los Detectores de Gases Portátiles son entregados al usuario
+      <strong>calibrados, verificados, operativos, cargados, identificados</strong>
+      y con el sticker del día correspondiente para su uso en la
+      <strong>Planta de Molibdeno</strong>.
+    </p>
+
+    <div class="controls-container">
+      <div class="section-tag" style="color: var(--azul);">Controles del Equipo 3D</div>
+      <div class="controls-grid">
+        
+        <button class="btn-3d" id="btn-power" onclick="toggleEncendido()">
+          <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg>
+          <span id="power-text">Encender</span>
+        </button>
+
+        <button class="btn-3d btn-accion" id="btn-calibrar" onclick="procesarAccion('calibrar', 'btn-verificar', 'btn-calibrar')" disabled>
+          <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+          1. Calibrar
+        </button>
+
+        <button class="btn-3d btn-accion" id="btn-verificar" onclick="procesarAccion('pantalla', 'btn-sticker', 'btn-verificar')" disabled>
+          <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          2. Verificar
+        </button>
+        
+        <button class="btn-3d btn-accion" id="btn-sticker" onclick="procesarAccion('verificado', 'btn-inicio', 'btn-sticker')" disabled>
+          <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+          3. Sticker
+        </button>
+        
+        <button class="btn-3d btn-accion" id="btn-inicio" onclick="procesarAccion('inicio', null, 'btn-inicio')" disabled>
+          <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          4. Terminar
+        </button>
+
+      </div>
+    </div>
+
+    <div class="location-bar">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+      Planta de Molibdeno
+    </div>
+
+    <div class="video-section">
+      <div class="video-label">
+        <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+        <span>Procedimiento de Entrega</span>
+        <div class="rec-dot"></div>
+      </div>
+      <div class="video-wrap">
+        <video
+          src="../../Recursos/video/M1/entrega.mp4"
+          controls
+          preload="auto"
+          poster=""
+        ></video>
+        <div class="video-placeholder" id="vid-ph">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+          <span>VIDEO · ENTREGA DEL DETECTOR</span>
+          <span style="font-size:.62rem;opacity:.45;margin-top:2px">Agregar ruta en el atributo src del video</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="iframe-panel">
+    <div class="bg-transition" id="bg-trans"></div>
+    
+    <div class="iframe-header">
+      <div class="traffic-lights">
+        <div class="tl tl-r"></div>
+        <div class="tl tl-y"></div>
+        <div class="tl tl-g"></div>
+      </div>
+      <span class="iframe-title">Detector de Gases X4</span>
+    </div>
+    <div class="iframe-wrap">
+      <div class="scan-overlay"></div>
+      <iframe
+        id="v3d-frame"
+        src="../../Complementos/DetectorX4/detector de gasesx4.html"
+        title="Detector de Gases X4"
+        allowtransparency="true"
+        allowfullscreen
+      ></iframe>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const vid = document.querySelector('video');
+  const ph  = document.getElementById('vid-ph');
+  if (vid && vid.getAttribute('src') && vid.getAttribute('src').trim() !== '') {
+    ph.style.display = 'none';
+  }
+
+  let estaEncendido = false;
+  let moduloCompletado = false;
+  
+  let progresoBotones = {
+    calibrar: false,
+    pantalla: false,
+    verificado: false,
+    inicio: false
+  };
+
+  function toggleEncendido() {
+    const btnPower = document.getElementById('btn-power');
+    const textPower = document.getElementById('power-text');
+    const botonesAccion = document.querySelectorAll('.btn-accion');
+    const iframeFrame = document.getElementById('v3d-frame');
+    const bgTrans = document.getElementById('bg-trans');
+
+    estaEncendido = !estaEncendido;
+
+    if (estaEncendido) {
+      btnPower.classList.add('active-power');
+      textPower.innerText = "ON";
+      document.getElementById('btn-calibrar').removeAttribute('disabled');
+      ejecutarV3D('encendido');
+    } else {
+      btnPower.classList.remove('active-power');
+      textPower.innerText = "Encender";
+      botonesAccion.forEach(btn => {
+        btn.setAttribute('disabled', 'true');
+        btn.classList.remove('btn-completado');
+      });
+      
+      // Reiniciamos las banderas y las visuales
+      progresoBotones = { calibrar: false, pantalla: false, verificado: false, inicio: false };
+      iframeFrame.classList.remove('fade-out');
+      bgTrans.classList.remove('visible');
+      
+      ejecutarV3D('apagado');
+    }
+  }
+
+  function procesarAccion(accion, siguienteBtnId, btnActualId) {
+    ejecutarV3D(accion);
+
+    if (progresoBotones.hasOwnProperty(accion)) {
+      progresoBotones[accion] = true;
+    }
+
+    if (btnActualId) {
+      document.getElementById(btnActualId).classList.add('btn-completado');
+    }
+
+    if (siguienteBtnId) {
+      document.getElementById(siguienteBtnId).removeAttribute('disabled');
+    }
+
+    // Efecto de desvanecimiento para el último botón
+    if (accion === 'inicio') {
+      document.getElementById('v3d-frame').classList.add('fade-out');
+      document.getElementById('bg-trans').classList.add('visible');
+    }
+
+    if (!moduloCompletado && progresoBotones.calibrar && progresoBotones.pantalla && progresoBotones.verificado && progresoBotones.inicio) {
+      moduloCompletado = true;
+      
+      try {
+        if (typeof window.parent.continuarbtn === 'function') {
+          // Un pequeño delay para dejar que termine la animación antes de notificar a la plataforma principal
+          setTimeout(() => {
+            window.parent.continuarbtn("true");
+            console.log("window.parent.continuarbtn('true')");
+          }, 1500);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
+
+  function ejecutarV3D(procedimiento) {
+    const iframe = document.getElementById('v3d-frame');
+    
+    try {
+      const iframeWindow = iframe.contentWindow;
+      
+      if (iframeWindow && iframeWindow.v3d && iframeWindow.v3d.puzzles && iframeWindow.v3d.puzzles.procedures) {
+        if (typeof iframeWindow.v3d.puzzles.procedures[procedimiento] === 'function') {
+          iframeWindow.v3d.puzzles.procedures[procedimiento]();
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+</script>
+
+</body>
+</html>

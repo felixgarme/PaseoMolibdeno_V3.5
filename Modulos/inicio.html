@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Módulos</title>
+  <style>
+    @font-face {
+      font-family: "AASmartSans";
+      src: url("../Recursos/fonts/AASMARTSANS-REGULAR.TTF") format("truetype");
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: "AASmartSans";
+      src: url("../Recursos/fonts/AASMARTSANS-SEMIBOLD.TTF") format("truetype");
+      font-weight: 600;
+    }
+    @font-face {
+      font-family: "AASmartSans";
+      src: url("../Recursos/fonts/AASMARTSANS-BOLD.TTF") format("truetype");
+      font-weight: 700;
+    }
+
+    :root {
+      --primary: #031795;
+      --primary-soft: #0d2ab8;
+      --accent: #3d5afe;
+      --bg: #f4f6fc;
+      --surface: #ffffff;
+      --text: #0a1447;
+      --border: rgba(3, 23, 149, 0.12);
+      --border-strong: rgba(3, 23, 149, 0.22);
+      --shadow: 0 4px 6px -1px rgba(10, 20, 71, 0.06), 0 12px 24px -8px rgba(3, 23, 149, 0.12);
+      --muted: #5c678a;
+      --success: #0d9f6e;
+      --success-soft: rgba(13, 159, 110, 0.12);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-pill: 999px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "AASmartSans", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .layout {
+      display: block;
+      min-height: 100vh;
+    }
+
+    .content {
+      padding: 32px;
+    }
+
+    .welcome-section {
+      margin-bottom: 28px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-strong);
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .welcome-inner {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 22px 26px;
+    }
+
+    .welcome-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, var(--primary-soft), var(--accent));
+      color: #fff;
+    }
+
+    .welcome-line {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .welcome-name {
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .page-header {
+      margin-bottom: 28px;
+    }
+
+    .heading {
+      margin: 0;
+      color: var(--primary);
+      font-size: 2rem;
+      font-weight: 800;
+    }
+
+    .heading-sub {
+      margin-top: 10px;
+      color: var(--muted);
+    }
+
+    .cards {
+      display: grid;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      margin-bottom: 0;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .card-image {
+      min-height: 220px;
+      background: center/cover no-repeat;
+      position: relative;
+      overflow: hidden;
+      transform: scale(1);
+      transition: transform 0.35s ease, filter 0.35s ease, box-shadow 0.35s ease;
+      filter: blur(0px);
+    }
+
+    .card-image::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.02),
+        rgba(0, 0, 0, 0.08)
+      );
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+
+    .card:hover .card-image {
+      transform: scale(1.06);
+      filter: blur(2px) brightness(0.95);
+    }
+
+    .card:hover .card-image::after {
+      opacity: 1;
+    }
+
+    .modulo1 {
+      background-image: url("../Recursos/img/home/modulo1.png");
+    }
+
+    .modulo2 {
+      background-image: url("../Recursos/img/home/modulo2.png");
+    }
+
+    .modulo3 {
+      background-image: url("../Recursos/img/home/modulo3.png");
+    }
+
+    .modulo4 {
+      background-image: url("../Recursos/img/home/modulo4.png");
+    }
+
+    .card-body {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card h3 {
+      margin: 0;
+      color: var(--primary);
+    }
+
+    .card p {
+      margin-top: 14px;
+      color: var(--muted);
+    }
+
+    .meta {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .item {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      padding: 8px 12px;
+      background: rgba(3, 23, 149, 0.05);
+      border-radius: var(--radius-md);
+    }
+
+    .badge {
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: #0d9f6e;
+      font-weight: 800;
+    }
+
+    .status.ok {
+      color: var(--success);
+      background: var(--success-soft);
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+    }
+
+    .buttons {
+      margin-top: auto;
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 20px;
+    }
+
+    .pill {
+      border-radius: var(--radius-pill);
+      height: 46px;
+      padding: 0 22px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-soft));
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+    }
+
+    .pill:hover {
+      filter: brightness(1.05);
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        padding: 18px;
+      }
+
+      .card {
+        grid-template-columns: 1fr;
+      }
+
+      .card-image {
+        min-height: 190px;
+      }
+
+      .buttons {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+  <main class="content">
+
+    <section class="welcome-section">
+      <div class="welcome-inner">
+        <div class="welcome-avatar">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="7" r="4"/>
+            <path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/>
+          </svg>
+        </div>
+        <p class="welcome-line">
+          Bienvenido <span class="welcome-name" id="welcome-name"></span>
+        </p>
+      </div>
+    </section>
+
+    <header class="page-header">
+      <h1 class="heading">Módulos del curso</h1>
+      <p class="heading-sub">
+        Avanza por cada módulo y accede al test cuando esté disponible.
+      </p>
+    </header>
+
+    <div class="cards">
+      <article class="card">
+        <div class="card-image modulo1"></div>
+        <div class="card-body">
+          <h3>Módulo 1: Ingreso a la planta</h3>
+          <p>
+            Proceso de ingreso seguro, validación de EPP y normas esenciales.
+          </p>
+
+          <div class="meta">
+            <div class="item">Score <span class="badge">0%</span></div>
+            <div class="item">Estado <span class="status ok">Disponible</span></div>
+          </div>
+
+          <div class="buttons">
+            <button class="pill" onclick="window.location.href='../Modulos/M1 home.html'">
+              Comenzar
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-image modulo2"></div>
+        <div class="card-body">
+          <h3>Módulo 2: Identificación de riesgos</h3>
+          <p>
+            Reconocimiento de peligros, evaluación básica de riesgos y prevención.
+          </p>
+
+          <div class="meta">
+            <div class="item">Score <span class="badge">0%</span></div>
+            <div class="item">Estado <span class="status ok">Disponible</span></div>
+          </div>
+
+          <div class="buttons">
+            <button class="pill" onclick="window.location.href='../Modulos/M2 home.html'">
+              Comenzar
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-image modulo3"></div>
+        <div class="card-body">
+          <h3>Módulo 3: Uso de equipos de protección</h3>
+          <p>
+            Uso correcto de casco, lentes, guantes y demás implementos de seguridad.
+          </p>
+
+          <div class="meta">
+            <div class="item">Score <span class="badge">0%</span></div>
+            <div class="item">Estado <span class="status ok">Disponible</span></div>
+          </div>
+
+          <div class="buttons">
+            <button class="pill" onclick="window.location.href='../Modulos/M3 home.html'">
+              Comenzar
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-image modulo4"></div>
+        <div class="card-body">
+          <h3>Módulo 4: Respuesta ante emergencias</h3>
+          <p>
+            Procedimientos de actuación, rutas de evacuación y reportes de incidente.
+          </p>
+
+          <div class="meta">
+            <div class="item">Score <span class="badge">0%</span></div>
+            <div class="item">Estado <span class="status ok">Disponible</span></div>
+          </div>
+
+          <div class="buttons">
+            <button class="pill" onclick="window.location.href='../Modulos/M4 home.html'">
+              Comenzar
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  var STORAGE_KEY = "quellaveco_login_usuario";
+  var nameEl = document.getElementById("welcome-name");
+
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+
+    var u = JSON.parse(raw);
+    var nombre = [u.nombres, u.apellidos].filter(Boolean).join(" ");
+    nameEl.textContent = nombre || "";
+  } catch (e) {}
+})();
+</script>
+
+</body>
+</html>
