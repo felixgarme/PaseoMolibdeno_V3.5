@@ -8,12 +8,12 @@
       <field name="FADE_ANNOTATIONS">TRUE</field>
     </block>
   </tab>
-  <tab name="General" type="CommonTab" active="true" scrollx="185.28748859453322" scrolly="212.85367288353893" scale="0.3">
+  <tab name="General" type="CommonTab" active="true" scrollx="-84.38603202417448" scrolly="-1730" scale="1">
     <block xmlns="https://developers.google.com/blockly/xml" type="execScript" id="5F2+-SKIVYr9#Vy2Po~4" x="364" y="-323">
       <value name="TEXT">
         <shadow type="textMultiline" id="QT4dFmnPzDd%.|@1u(:)">
           <field name="HIGHLIGHT_MODE">javascript</field>
-          <field name="TEXT" editor-height="2" editor-width="678.75">window.app = app; &amp;#10;import("../../Recursos/js/imports/MascaraV2_Imports.js");</field>
+          <field name="TEXT" editor-height="3" editor-width="520">window.app = app; &amp;#10;import("../../Recursos/js/imports/MascaraV2_Imports.js");</field>
         </shadow>
       </value>
       <next>
