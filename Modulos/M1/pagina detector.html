@@ -33,7 +33,7 @@
     }
 
     .info-panel {
-      padding: 2.4rem 2.8rem 2rem;
+      padding: 6rem 2.8rem;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -171,56 +171,10 @@
       font-family:'Share Tech Mono',monospace;
       font-size:0.8rem; padding:9px 15px;
       border-radius:6px; letter-spacing:0.08em;
+      margin-top: auto;
     }
     .location-bar svg { fill:var(--rojo); width:15px;height:15px;flex-shrink:0; }
 
-    .video-section {
-      background:var(--azul-oscuro);
-      border-radius:10px; overflow:hidden;
-      animation:fadeUp 0.6s ease 0.4s both;
-    }
-    @keyframes fadeUp {
-      from{opacity:0;transform:translateY(16px)}
-      to{opacity:1;transform:translateY(0)}
-    }
-
-    .video-label {
-      display:flex; align-items:center; gap:0.6rem;
-      padding:0.5rem 1rem;
-      background:var(--azul);
-      border-bottom:2px solid var(--rojo);
-    }
-    .video-label svg { fill:var(--blanco); width:14px;height:14px; }
-    .video-label span {
-      font-family:'Share Tech Mono',monospace;
-      font-size:0.68rem; color:rgba(255,255,255,0.85);
-      letter-spacing:0.12em; text-transform:uppercase;
-    }
-    .rec-dot {
-      width:8px;height:8px;border-radius:50%;
-      background:var(--rojo);margin-left:auto;
-      animation:blink 1.2s step-end infinite;
-    }
-    @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-
-    .video-wrap {
-      position:relative; width:100%; aspect-ratio:16/9; background:#000;
-    }
-    .video-wrap video {
-      width:100%;height:100%;object-fit:cover;display:block;
-    }
-    .video-placeholder {
-      position:absolute;inset:0;
-      display:flex;flex-direction:column;
-      align-items:center;justify-content:center;gap:0.6rem;
-      background:linear-gradient(135deg,#020f6b 0%,#031795 100%);
-      color:rgba(255,255,255,0.55);
-      font-family:'Share Tech Mono',monospace;
-      font-size:0.7rem;letter-spacing:0.1em;
-    }
-    .video-placeholder svg{fill:rgba(255,255,255,0.3);width:36px;height:36px;}
-
-    /* --- ESTILOS DEL PANEL IFRAME Y TRANSICIONES --- */
     .iframe-panel {
       display:flex; flex-direction:column;
       animation:slideInRight 0.7s cubic-bezier(.22,1,.36,1) 0.15s both;
@@ -232,7 +186,6 @@
       to{opacity:1;transform:translateX(0)}
     }
     
-    /* Capa de la nueva imagen de fondo (detector.png) con opacidad 0 inicial */
     .bg-transition {
       position: absolute;
       inset: 0;
@@ -246,7 +199,6 @@
       opacity: 1;
     }
 
-    /* Malla azul superpuesta (z-index ajustado para estar sobre el fondo) */
     .iframe-panel::before {
       content:''; position:absolute; inset:0;
       background:rgba(2,15,107,0.15);
@@ -271,11 +223,12 @@
     .tl-r{background:var(--rojo);}
     .tl-y{background:#ffcc00;}
     .tl-g{background:#00cc55;animation:blink 2s step-end infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
     .iframe-wrap {
       flex:1; position:relative; z-index:2;
+      display: flex; flex-direction: column;
     }
-    /* Estilos del iframe y clase de desvanecimiento */
     .iframe-wrap iframe {
       width:100%;height:100%;border:none;display:block;
       background:transparent;
@@ -295,6 +248,55 @@
       );
       pointer-events:none;z-index:3;
     }
+
+    .video-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      background: var(--azul-oscuro);
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    .video-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .video-label {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.5rem 1rem;
+      background: var(--azul);
+      border-bottom: 2px solid var(--rojo);
+      flex-shrink: 0;
+    }
+    .video-label svg { fill: var(--blanco); width: 14px; height: 14px; }
+    .video-label span {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.68rem; color: rgba(255,255,255,0.85);
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .rec-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--rojo); margin-left: auto;
+      animation: blink 1.2s step-end infinite;
+    }
+    .video-wrap {
+      flex: 1; position: relative; width: 100%; background: #000;
+    }
+    .video-wrap video {
+      width: 100%; height: 100%; object-fit: contain; display: block;
+    }
+    .video-placeholder {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 0.6rem;
+      background: linear-gradient(135deg, #020f6b 0%, #031795 100%);
+      color: rgba(255,255,255,0.55);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 0.1em;
+    }
+    .video-placeholder svg { fill: rgba(255,255,255,0.3); width: 36px; height: 36px; }
 
     @media (max-width:768px){
       main {
@@ -335,7 +337,7 @@
       <div class="section-tag" style="color: var(--azul);">Controles del Equipo 3D</div>
       <div class="controls-grid">
         
-        <button class="btn-3d" id="btn-power" onclick="toggleEncendido()">
+        <button class="btn-3d" id="btn-power" onclick="toggleEncendido()" disabled>
           <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg>
           <span id="power-text">Encender</span>
         </button>
@@ -368,27 +370,6 @@
       Planta de Molibdeno
     </div>
 
-    <div class="video-section">
-      <div class="video-label">
-        <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-        <span>Procedimiento de Entrega</span>
-        <div class="rec-dot"></div>
-      </div>
-      <div class="video-wrap">
-        <video
-          src="../../Recursos/video/M1/entrega.mp4"
-          controls
-          preload="auto"
-          poster=""
-        ></video>
-        <div class="video-placeholder" id="vid-ph">
-          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-          <span>VIDEO · ENTREGA DEL DETECTOR</span>
-          <span style="font-size:.62rem;opacity:.45;margin-top:2px">Agregar ruta en el atributo src del video</span>
-        </div>
-      </div>
-    </div>
-
   </section>
 
   <section class="iframe-panel">
@@ -402,8 +383,34 @@
       </div>
       <span class="iframe-title">Detector de Gases X4</span>
     </div>
+    
     <div class="iframe-wrap">
       <div class="scan-overlay"></div>
+      
+      <div id="video-overlay" class="video-overlay">
+        <div class="video-label">
+          <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+          <span>Procedimiento de Entrega</span>
+          <div class="rec-dot"></div>
+        </div>
+        <div class="video-wrap">
+          <video
+            id="main-video"
+            src="../../Recursos/video/M1/entrega.mp4"
+            autoplay
+            muted
+            playsinline
+            preload="auto"
+            poster=""
+          ></video>
+          <div class="video-placeholder" id="vid-ph">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+            <span>VIDEO · ENTREGA DEL DETECTOR</span>
+            <span style="font-size:.62rem;opacity:.45;margin-top:2px">Agregar ruta en el atributo src del video</span>
+          </div>
+        </div>
+      </div>
+
       <iframe
         id="v3d-frame"
         src="../../Complementos/DetectorX4/detector de gasesx4.html"
@@ -417,11 +424,19 @@
 </main>
 
 <script>
-  const vid = document.querySelector('video');
-  const ph  = document.getElementById('vid-ph');
+  const vid = document.getElementById('main-video');
+  const ph = document.getElementById('vid-ph');
+  const videoOverlay = document.getElementById('video-overlay');
+  const btnPower = document.getElementById('btn-power');
+
   if (vid && vid.getAttribute('src') && vid.getAttribute('src').trim() !== '') {
     ph.style.display = 'none';
   }
+
+  vid.addEventListener('ended', () => {
+    videoOverlay.style.display = 'none';
+    btnPower.removeAttribute('disabled');
+  });
 
   let estaEncendido = false;
   let moduloCompletado = false;
@@ -434,7 +449,6 @@
   };
 
   function toggleEncendido() {
-    const btnPower = document.getElementById('btn-power');
     const textPower = document.getElementById('power-text');
     const botonesAccion = document.querySelectorAll('.btn-accion');
     const iframeFrame = document.getElementById('v3d-frame');
@@ -455,7 +469,6 @@
         btn.classList.remove('btn-completado');
       });
       
-      // Reiniciamos las banderas y las visuales
       progresoBotones = { calibrar: false, pantalla: false, verificado: false, inicio: false };
       iframeFrame.classList.remove('fade-out');
       bgTrans.classList.remove('visible');
@@ -479,7 +492,6 @@
       document.getElementById(siguienteBtnId).removeAttribute('disabled');
     }
 
-    // Efecto de desvanecimiento para el último botón
     if (accion === 'inicio') {
       document.getElementById('v3d-frame').classList.add('fade-out');
       document.getElementById('bg-trans').classList.add('visible');
@@ -487,35 +499,24 @@
 
     if (!moduloCompletado && progresoBotones.calibrar && progresoBotones.pantalla && progresoBotones.verificado && progresoBotones.inicio) {
       moduloCompletado = true;
-      
       try {
         if (typeof window.parent.continuarbtn === 'function') {
-          // Un pequeño delay para dejar que termine la animación antes de notificar a la plataforma principal
-          setTimeout(() => {
-            window.parent.continuarbtn("true");
-            console.log("window.parent.continuarbtn('true')");
-          }, 1500);
+          window.parent.continuarbtn("true");
         }
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) {}
     }
   }
 
   function ejecutarV3D(procedimiento) {
     const iframe = document.getElementById('v3d-frame');
-    
     try {
       const iframeWindow = iframe.contentWindow;
-      
       if (iframeWindow && iframeWindow.v3d && iframeWindow.v3d.puzzles && iframeWindow.v3d.puzzles.procedures) {
         if (typeof iframeWindow.v3d.puzzles.procedures[procedimiento] === 'function') {
           iframeWindow.v3d.puzzles.procedures[procedimiento]();
         }
       }
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   }
 </script>
 
